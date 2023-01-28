@@ -24,6 +24,42 @@ export default function Calculator() {
         setEquationHistory(newEquHis);
     }
 
+    const [operationInput, setOperationInput] = React.useState<string>();
+
+    const updateEquationHistory = () => {
+        const newEquHis: Equation[] = equationHistory;
+        const newId = newEquHis[newEquHis.length - 1].id + 1;
+        const equation: Equation = {id: newId, termA: termA?.toString() || "", termB: termB?.toString() || ""};
+        newEquHis.push(equation);
+        setEquationHistory(newEquHis);
+    }
+
+    const calcEquation = () => {
+        if(!operationInput || !termA || !termB) return;
+        console.log(operationInput)
+        const value = math.parse(operationInput.slice(1, operationInput.length));
+        switch (operationInput[0]) {
+            case "+":
+                setTermA(math.simplify(new math.OperatorNode('+', 'add', [termA, value])));
+                setTermB(math.simplify(new math.OperatorNode('+', 'add', [termB, value])));
+                break;
+            case "-":
+                setTermA(math.simplify(new math.OperatorNode("-", "subtract", [termA, value])));
+                setTermB(math.simplify(new math.OperatorNode("-", "subtract", [termB, value])));
+                break;
+            case "/":
+                setTermA(math.simplify(new math.OperatorNode("/", "divide", [termA, value])));
+                setTermB(math.simplify(new math.OperatorNode("/", "divide", [termB, value])));
+                break;
+            case "*":
+                setTermA(math.simplify(new math.OperatorNode("*","multiply", [termA, value])));
+                setTermB(math.simplify(new math.OperatorNode("*","multiply", [termB, value])));
+                break;
+        }
+        console.log(termA)
+        updateEquationHistory();
+    }
+
     return(
         <>
             <div>
@@ -44,6 +80,8 @@ export default function Calculator() {
                     );
                 })}
             </div>
+            <input value={operationInput || ""} onChange={(e) => {setOperationInput(e.target.value)}} placeholder="+,-,*,/ operation" />
+            <button onClick={calcEquation}>Anwenden</button>
         </>
     )
 }
