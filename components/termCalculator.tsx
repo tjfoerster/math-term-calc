@@ -10,9 +10,9 @@ type Equation = {
 }
 
 export default function Calculator() {
-    const [termA, setTermA] = React.useState<MathNode | undefined>();
+    const [termA, setTermA] = React.useState<MathNode>();
     const [termAInputValue, setTermAInputValue] = React.useState<string>();
-    const [termB, setTermB] = React.useState<MathNode | undefined>();
+    const [termB, setTermB] = React.useState<MathNode>();
     const [termBInputValue, setTermBInputValue] = React.useState<string>();
 
     const emptyEquationHistory: Equation[] = [{id: 0, termA: "Term A", termB: "Term B"}];
@@ -26,9 +26,8 @@ export default function Calculator() {
     const [operationInput, setOperationInput] = React.useState<string>();
 
     React.useMemo(() => {
-        console.log(equationHistory)
         if(equationHistory.length > 1 && operationInput) equationHistory[equationHistory.length - 1].operation = `| ${operationInput}`;
-        equationHistory.push({id: equationHistory.length, termA: termA?.toString() || "", termB: termB?.toString() || ""});
+        if(termA?.toString() !== "undefined" && termB?.toString() !== "undefined") equationHistory.push({id: equationHistory.length, termA: termA?.toString() || "", termB: termB?.toString() || ""});
     }, [termA, termB])
 
     const calcEquation = () => {
@@ -55,27 +54,38 @@ export default function Calculator() {
     }
 
     return(
-        <>
-            <div>
-                <span>Term A:</span>
-                <input value={termAInputValue || ""} onChange={(e) => {setTermAInputValue(e.target.value)}} />
+        <div className="flex flex-col gap-10">
+            <div className="flex flex-col gap-2 w-full">
+                <div className="flex gap-2 items-center w-full">
+                    <div>Term A:</div>
+                    <input value={termAInputValue || ""} onChange={(e) => {setTermAInputValue(e.target.value)}} type="text" className="grow" />
+                </div>
+                <div className="flex gap-2 items-center w-full">
+                    <div>Term B:</div>
+                    <input value={termBInputValue || ""} onChange={(e) => {setTermBInputValue(e.target.value)}} type="text" className="grow" />
+                </div>
+                <i>Beachte <a href="https://mathjs.org/docs/expressions/syntax.html" target={"_blank"} rel={"noreferrer"}>Syntax</a></i>
+                <button onClick={() => {resetEquationHistory(); setTermA(math.simplify(termAInputValue || "")); setTermB(math.simplify(termBInputValue || ""))}} type="button" className="btn w-full">Gleichung erzeugen</button>
             </div>
-            <div>
-                <span>Term B:</span>
-                <input value={termBInputValue || ""} onChange={(e) => {setTermBInputValue(e.target.value)}} />
+            <div className="flex flex-col gap-2">
+                <h2 className="text-center">Gleichung lösen</h2>
+                <table className="table-auto m-auto">
+                    {equationHistory.map(e => {
+                        if(e.termA !== "" && e.termB !== "") return (
+                            <tr key={e.id}>
+                                <td className="text-right">{e.termA}</td>
+                                <td className="text-center">=</td>
+                                <td>{e.termB}</td>
+                                {e.operation && <td>{e.operation}</td>}
+                            </tr>
+                        );
+                    })}
+                </table>
             </div>
-            <div>Beachte <a href="https://mathjs.org/docs/expressions/syntax.html" target={"_blank"} rel={"noreferrer"}>Syntax</a></div>
-            <button onClick={() => {resetEquationHistory(); setTermA(math.simplify(termAInputValue || "")); setTermB(math.simplify(termBInputValue || ""))}}>Update</button>
-            <h2>Gleichung lösen</h2>
-            <div className="text-center">
-                {equationHistory.map(e => {
-                    if(e.termA !== "" && e.termB !== "") return (
-                        <div key={e.id}>{e.termA + " = " + e.termB}{e.operation && " " + e.operation}</div>
-                    );
-                })}
+            <div className="flex gap-2">
+                <input value={operationInput || ""} onChange={(e) => {setOperationInput(e.target.value)}} type="text" placeholder="+,-,*,/ operation" />
+                <button onClick={calcEquation} type="button" className="btn">Anwenden</button>
             </div>
-            <input value={operationInput || ""} onChange={(e) => {setOperationInput(e.target.value)}} placeholder="+,-,*,/ operation" />
-            <button onClick={calcEquation}>Anwenden</button>
-        </>
+        </div>
     )
 }
