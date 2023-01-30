@@ -6,37 +6,33 @@ type Equation = {
     id: number;
     termA: string;
     termB: string;
+    operation?: string;
 }
 
 export default function Calculator() {
-    const [termA, setTermA] = React.useState<MathNode>();
+    const [termA, setTermA] = React.useState<MathNode | undefined>();
     const [termAInputValue, setTermAInputValue] = React.useState<string>();
-    const [termB, setTermB] = React.useState<MathNode>();
+    const [termB, setTermB] = React.useState<MathNode | undefined>();
     const [termBInputValue, setTermBInputValue] = React.useState<string>();
 
     const emptyEquationHistory: Equation[] = [{id: 0, termA: "Term A", termB: "Term B"}];
     const [equationHistory, setEquationHistory] = React.useState<Equation[]>(emptyEquationHistory);
 
     const resetEquationHistory = () => {
-        const equation: Equation = {id: 1, termA: termA?.toString() || "", termB: termB?.toString() || ""};
-        const newEquHis: Equation[] = emptyEquationHistory;
-        newEquHis.push(equation)
-        setEquationHistory(newEquHis);
+        setEquationHistory(emptyEquationHistory)
+        setOperationInput(undefined);
     }
 
     const [operationInput, setOperationInput] = React.useState<string>();
 
-    const updateEquationHistory = () => {
-        const newEquHis: Equation[] = equationHistory;
-        const newId = newEquHis[newEquHis.length - 1].id + 1;
-        const equation: Equation = {id: newId, termA: termA?.toString() || "", termB: termB?.toString() || ""};
-        newEquHis.push(equation);
-        setEquationHistory(newEquHis);
-    }
+    React.useMemo(() => {
+        console.log(equationHistory)
+        if(equationHistory.length > 1 && operationInput) equationHistory[equationHistory.length - 1].operation = `| ${operationInput}`;
+        equationHistory.push({id: equationHistory.length, termA: termA?.toString() || "", termB: termB?.toString() || ""});
+    }, [termA, termB])
 
     const calcEquation = () => {
         if(!operationInput || !termA || !termB) return;
-        console.log(operationInput)
         const value = math.parse(operationInput.slice(1, operationInput.length));
         switch (operationInput[0]) {
             case "+":
@@ -56,27 +52,25 @@ export default function Calculator() {
                 setTermB(math.simplify(new math.OperatorNode("*","multiply", [termB, value])));
                 break;
         }
-        console.log(termA)
-        updateEquationHistory();
     }
 
     return(
         <>
             <div>
                 <span>Term A:</span>
-                <input value={termAInputValue || ""} onChange={(e) => {setTermAInputValue(e.target.value)}} onBlur={(e) => {setTermA(math.simplify(e.target.value || ""))}} />
+                <input value={termAInputValue || ""} onChange={(e) => {setTermAInputValue(e.target.value)}} />
             </div>
             <div>
                 <span>Term B:</span>
-                <input value={termBInputValue || ""} onChange={(e) => {setTermBInputValue(e.target.value)}} onBlur={(e) => {setTermB(math.simplify(e.target.value || ""))}} />
+                <input value={termBInputValue || ""} onChange={(e) => {setTermBInputValue(e.target.value)}} />
             </div>
             <div>Beachte <a href="https://mathjs.org/docs/expressions/syntax.html" target={"_blank"} rel={"noreferrer"}>Syntax</a></div>
-            <button onClick={resetEquationHistory}>Update</button>
+            <button onClick={() => {resetEquationHistory(); setTermA(math.simplify(termAInputValue || "")); setTermB(math.simplify(termBInputValue || ""))}}>Update</button>
             <h2>Gleichung lösen</h2>
             <div className="text-center">
                 {equationHistory.map(e => {
                     if(e.termA !== "" && e.termB !== "") return (
-                        <div key={e.id}>{e.termA + " = " + e.termB}</div>
+                        <div key={e.id}>{e.termA + " = " + e.termB}{e.operation && " " + e.operation}</div>
                     );
                 })}
             </div>
