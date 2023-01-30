@@ -74,7 +74,7 @@ export default function Calculator() {
                         if(e.termA !== "" && e.termB !== "") return (
                             <tr key={e.id}>
                                 <td className="text-right">{e.termA}</td>
-                                <td className="text-center">=</td>
+                                <td className="text-center px-3">=</td>
                                 <td>{e.termB}</td>
                                 {e.operation && <td>{e.operation}</td>}
                             </tr>
