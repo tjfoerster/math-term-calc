@@ -76,7 +76,7 @@ export default function Calculator() {
                                 <td className="text-right">{e.termA}</td>
                                 <td className="text-center px-3">=</td>
                                 <td>{e.termB}</td>
-                                {e.operation && <td>{e.operation}</td>}
+                                {e.operation && <td className="pl-3">{e.operation}</td>}
                             </tr>
                         );
                     })}
